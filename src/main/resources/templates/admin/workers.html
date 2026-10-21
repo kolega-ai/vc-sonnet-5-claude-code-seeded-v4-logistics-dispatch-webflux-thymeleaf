@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Workers</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="card">
+        <p class="section-title">Field workers</p>
+        <table class="data-table">
+            <thead><tr><th>Worker</th><th>Region</th><th>Availability</th><th>Certifications</th></tr></thead>
+            <tbody>
+            <tr th:each="w : ${workers}">
+                <td>#<span th:text="${w.id}"></span></td>
+                <td th:text="'Region ' + ${w.regionId}"></td>
+                <td><span class="badge badge-info" th:text="${w.availability}"></span></td>
+                <td th:text="${w.certifications}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <p class="section-title">Directory search</p>
+        <p class="help-text">Resolve a field worker against the corporate staff directory before adding them to a region.</p>
+        <div class="field"><label>Directory id</label><input id="dirId" placeholder="e.g. jdoe"/></div>
+        <div class="form-actions"><button type="button" id="dirGo" class="btn btn-primary btn-sm">Resolve</button></div>
+        <pre id="dirOut" class="help-text" style="white-space:pre-wrap;"></pre>
+    </div>
+</div>
+<script th:inline="none">
+    document.getElementById('dirGo').addEventListener('click', function () {
+        var id = encodeURIComponent(document.getElementById('dirId').value);
+        fetch('/dispatch/workers/directory?directoryId=' + id)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { document.getElementById('dirOut').textContent = JSON.stringify(data, null, 2); });
+    });
+</script>
+</body>
+</html>

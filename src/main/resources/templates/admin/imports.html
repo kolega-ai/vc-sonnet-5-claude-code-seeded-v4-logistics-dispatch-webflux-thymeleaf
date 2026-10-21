@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Imports</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="alert alert-success" th:if="${param.imported}">Import complete for <span th:text="${param.imported}"></span>.</div>
+
+    <div class="grid grid-3">
+        <div class="card">
+            <h3>Import customers</h3>
+            <p class="help-text">CSV columns: name,email,phone,region_id</p>
+            <form th:action="@{/admin/imports/customers}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv"/>
+                <div class="field" style="margin-top:8px;">
+                    <label>…or a partner feed address</label>
+                    <input name="sourceUrl" placeholder="https://partner.example/exports/customers.csv"/>
+                </div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Upload</button></div>
+            </form>
+        </div>
+        <div class="card">
+            <h3>Import locations</h3>
+            <p class="help-text">CSV columns: customer_id,label,address_line,city,state,postal_code</p>
+            <form th:action="@{/admin/imports/locations}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv" required/>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Upload</button></div>
+            </form>
+        </div>
+        <div class="card">
+            <h3>Import jobs</h3>
+            <p class="help-text">CSV columns: customer_id,location_id,service_type_id,region_id,priority,scheduled_start,scheduled_end,description,manifest_url</p>
+            <form id="jobsImportForm" th:action="@{/admin/imports/jobs}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv" required/>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Upload</button></div>
+            </form>
+            <pre id="jobsImportResult" class="help-text" style="white-space:pre-wrap;"></pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Partner stop manifest</h3>
+        <p class="help-text">Paste the partner's nightly XML manifest; each &lt;stop&gt; becomes a service location.</p>
+        <div class="field"><label>Partner</label><input id="manifestPartner"/></div>
+        <div class="field"><label>Manifest</label><textarea id="manifestDocument" rows="8" style="width:100%;"></textarea></div>
+        <div class="form-actions"><button type="button" id="manifestSubmit" class="btn btn-primary btn-sm">Submit manifest</button></div>
+        <pre id="manifestResult" class="help-text" style="white-space:pre-wrap;"></pre>
+        <p class="help-text" style="margin-top:10px;">Received files:
+            <a th:href="@{/admin/imports/files/manifest.xml}">manifest.xml</a>
+        </p>
+    </div>
+</div>
+<script th:inline="none">
+    document.getElementById('jobsImportForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        fetch(this.action, { method: 'POST', body: new FormData(this) })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                document.getElementById('jobsImportResult').textContent = JSON.stringify(data, null, 2);
+            });
+    });
+    document.getElementById('manifestSubmit').addEventListener('click', function () {
+        fetch('/admin/imports/partner-manifest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                partner: document.getElementById('manifestPartner').value,
+                document: document.getElementById('manifestDocument').value
+            })
+        }).then(function (r) { return r.json(); })
+          .then(function (data) {
+              document.getElementById('manifestResult').textContent = JSON.stringify(data, null, 2);
+          });
+    });
+</script>
+</body>
+</html>

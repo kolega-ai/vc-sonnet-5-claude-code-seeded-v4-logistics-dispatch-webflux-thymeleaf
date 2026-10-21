@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Partner Console</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="alert alert-success" th:if="${param.carrier}">Carrier handshake complete.</div>
+    <div class="alert alert-success" th:if="${param.rateCard}">Rate card applied.</div>
+    <div class="alert alert-danger" th:if="${param.error}">The partner operation could not be completed.</div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h3>Onboard carrier</h3>
+            <p class="help-text">Attach the carrier's onboarding sheet (code, gateway access key). The console handshakes with the carrier gateway.</p>
+            <form th:action="@{/dispatch/partners/carriers}" method="post" enctype="multipart/form-data">
+                <input type="file" name="sheet" required/>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Onboard</button></div>
+            </form>
+        </div>
+        <div class="card">
+            <h3>Apply rate card</h3>
+            <p class="help-text">Attach the carrier's nightly YAML rate card to update service-type pricing.</p>
+            <form th:action="@{/dispatch/partners/rate-cards}" method="post" enctype="multipart/form-data">
+                <input type="file" name="card" required/>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Apply</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Rate calculator</h3>
+        <p class="help-text">Evaluate a partner's rate rule against a base rate.</p>
+        <div class="field"><label>Base rate</label><input id="qBase" value="100"/></div>
+        <div class="field"><label>Rate rule</label><input id="qRule" value="base * 1.2"/></div>
+        <div class="form-actions"><button type="button" id="qGo" class="btn btn-primary btn-sm">Calculate</button></div>
+        <pre id="qOut" class="help-text" style="white-space:pre-wrap;"></pre>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h3>Delay notice wording</h3>
+            <p class="help-text">Preview the carrier desk's delay wording against the current depot context.</p>
+            <form th:action="@{/dispatch/partners/notices/delay}" method="post" target="delayOutFrame">
+                <div class="field"><label>Carrier</label><input name="carrier"/></div>
+                <div class="field"><label>Wording</label><textarea name="wording" rows="4" style="width:100%;">Shipment from ${carrier} is delayed; the ${depot} will confirm a new slot shortly.</textarea></div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Preview</button></div>
+            </form>
+            <iframe name="delayOutFrame" style="width:100%; height:90px; border:1px solid var(--color-border);" title="Delay notice preview"></iframe>
+        </div>
+        <div class="card">
+            <h3>Carrier catalogue</h3>
+            <p class="help-text">Find released carriers by region and name.</p>
+            <form th:action="@{/dispatch/partners/catalog/carriers}" method="get">
+                <div class="field"><label>Region</label><input name="region" value="north"/></div>
+                <div class="field"><label>Name contains</label><input name="name"/></div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Search</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:inline="none">
+    document.getElementById('qGo').addEventListener('click', function () {
+        var base = encodeURIComponent(document.getElementById('qBase').value);
+        var rule = document.getElementById('qRule').value;
+        fetch('/dispatch/quote?base=' + base, { headers: { 'X-Rate-Rule': rule } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { document.getElementById('qOut').textContent = JSON.stringify(data, null, 2); });
+    });
+</script>
+</body>
+</html>

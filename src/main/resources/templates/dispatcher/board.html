@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Dispatch Board</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="grid grid-4">
+        <div class="card stat-card"><div class="stat-value" th:text="${summary.unassigned}">0</div><div class="stat-label">Unassigned</div></div>
+        <div class="card stat-card"><div class="stat-value" th:text="${summary.inProgress}">0</div><div class="stat-label">Active / En Route</div></div>
+        <div class="card stat-card"><div class="stat-value" th:text="${summary.completedToday}">0</div><div class="stat-label">Completed</div></div>
+        <div class="card stat-card"><div class="stat-value" th:text="${summary.openIncidents}">0</div><div class="stat-label">Open Incidents</div></div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h2 style="margin:0;">Dispatch board</h2>
+            <a th:href="@{/dispatch/jobs/new}" class="btn btn-primary">+ New job</a>
+        </div>
+
+        <form class="filters" method="get" th:action="@{/dispatch/board}">
+            <div class="field">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="">All</option>
+                    <option th:each="s : ${T(com.fielddispatch.domain.JobStatus).values()}"
+                            th:value="${s.name()}" th:text="${s.name()}"
+                            th:selected="${s.name() == filterStatus}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="">All</option>
+                    <option value="low" th:selected="${filterPriority == 'low'}">low</option>
+                    <option value="normal" th:selected="${filterPriority == 'normal'}">normal</option>
+                    <option value="high" th:selected="${filterPriority == 'high'}">high</option>
+                    <option value="urgent" th:selected="${filterPriority == 'urgent'}">urgent</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="workerId">Worker</label>
+                <select id="workerId" name="workerId">
+                    <option value="">All</option>
+                    <option th:each="w : ${workers}" th:value="${w.id}" th:text="'Worker #' + ${w.id}" th:selected="${w.id == filterWorker}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <button type="submit" class="btn btn-outline">Apply filters</button>
+            </div>
+        </form>
+
+        <div th:if="${#lists.isEmpty(jobs)}" class="empty-state">
+            <div class="icon">📋</div>
+            <p>No jobs match these filters.</p>
+        </div>
+
+        <table class="data-table" th:unless="${#lists.isEmpty(jobs)}">
+            <thead>
+            <tr><th>Job</th><th>Region</th><th>Priority</th><th>Status</th><th>Scheduled</th><th>Worker</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td><a th:href="@{/jobs/{id}(id=${job.id})}">#<span th:text="${job.id}">1</span></a></td>
+                <td th:text="'Region ' + ${job.regionId}">Region</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${job.priority == 'urgent'} ? 'badge-danger' : (${job.priority == 'high'} ? 'badge-warning' : 'badge-neutral')"
+                          th:text="${job.priority}">normal</span>
+                </td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${job.status == 'completed'} ? 'badge-success' : (${job.status == 'cancelled' or job.status == 'failed'} ? 'badge-danger' : (${job.status == 'unassigned'} ? 'badge-neutral' : 'badge-info'))"
+                          th:text="${job.status}">status</span>
+                </td>
+                <td th:text="${#temporals.format(job.scheduledStart, 'MMM d, h:mm a')}">date</td>
+                <td th:text="${job.assignedWorkerId != null ? ('#' + job.assignedWorkerId) : '—'}">—</td>
+                <td>
+                    <form th:if="${job.status == 'unassigned'}" th:action="@{/dispatch/jobs/{id}/assign(id=${job.id})}" method="post" style="display:flex; gap:6px;">
+                        <select name="workerId" required>
+                            <option value="">Assign to…</option>
+                            <option th:each="w : ${workers}" th:value="${w.id}" th:text="'Worker #' + ${w.id}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <datalist id="customerDirectory"></datalist>
+</div>
+<script th:inline="none">
+    (function () {
+        function boardSession() {
+            var hit = document.cookie.split('; ').find(function (c) { return c.indexOf('dsp_sid=') === 0; });
+            return hit ? hit.substring('dsp_sid='.length) : '';
+        }
+        fetch('/dispatch/customers/directory', { headers: { 'X-Board-Session': boardSession() } })
+            .then(function (r) { return r.json(); })
+            .then(function (customers) {
+                var list = document.getElementById('customerDirectory');
+                customers.forEach(function (c) {
+                    var option = document.createElement('option');
+                    option.value = c.name;
+                    option.label = c.email + ' · ' + (c.phone || '');
+                    list.appendChild(option);
+                });
+            });
+    })();
+</script>
+</body>
+</html>

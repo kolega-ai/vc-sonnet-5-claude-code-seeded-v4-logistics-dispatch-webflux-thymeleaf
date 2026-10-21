@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Create account - Field Dispatch Operations</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=${assetVersion})}"/>
+</head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card" style="max-width:460px;">
+        <h1>Create your customer account</h1>
+        <p class="subtitle">Track your service jobs and download completion proof.</p>
+
+        <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+
+        <form th:action="@{/register}" th:object="${form}" method="post">
+            <div class="field">
+                <label for="fullName">Full name</label>
+                <input id="fullName" th:field="*{fullName}" required/>
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" th:field="*{email}" autocomplete="email" required/>
+            </div>
+            <div class="field">
+                <label for="phone">Phone</label>
+                <input id="phone" th:field="*{phone}"/>
+            </div>
+            <div class="field">
+                <label for="regionId">Region</label>
+                <select id="regionId" th:field="*{regionId}">
+                    <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}">Region</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" th:field="*{password}" autocomplete="new-password" required/>
+                <span class="help-text">At least 8 characters.</span>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="width:100%">Create account</button>
+            </div>
+        </form>
+        <div class="switch-link"><a th:href="@{/login}">Already have an account? Sign in</a></div>
+    </div>
+</div>
+</body>
+</html>

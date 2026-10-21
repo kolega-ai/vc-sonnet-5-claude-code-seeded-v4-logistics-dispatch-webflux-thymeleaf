@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Exports</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="grid grid-2">
+        <div class="card">
+            <h3>Completion report</h3>
+            <p class="help-text">All completed/failed jobs across your permitted regions.</p>
+            <a th:href="@{/admin/exports/completion-report.csv}" class="btn btn-primary btn-sm">Download CSV</a>
+        </div>
+        <div class="card">
+            <h3>Incident report</h3>
+            <p class="help-text">All incidents across your permitted regions.</p>
+            <a th:href="@{/admin/exports/incidents.csv}" class="btn btn-primary btn-sm">Download CSV</a>
+        </div>
+    </div>
+    <div class="card">
+        <h3>Route schedules</h3>
+        <table class="data-table">
+            <thead><tr><th>Route</th><th>Worker</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${routes}">
+                <td>#<span th:text="${r.id}"></span></td>
+                <td th:text="'Worker #' + ${r.workerId}"></td>
+                <td th:text="${r.routeDate}"></td>
+                <td>
+                    <a th:href="@{/admin/exports/routes/{id}.csv(id=${r.id})}" class="btn btn-sm btn-outline">Download</a>
+                    <form th:action="@{/dispatch/routes/{id}/sheet(id=${r.id})}" method="post" style="display:inline-flex; gap:6px; margin-left:6px;">
+                        <input name="sheetName" placeholder="sheet.csv" required/>
+                        <button type="submit" class="btn btn-sm btn-outline">Save to inbox</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

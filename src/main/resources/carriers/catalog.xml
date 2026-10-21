@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+    <carrier>
+        <code>NORDIC-EXPRESS</code>
+        <name>Nordic Express Freight</name>
+        <region>north</region>
+    </carrier>
+    <carrier>
+        <code>COASTAL-LINE</code>
+        <name>Coastal Line Haulage</name>
+        <region>coast</region>
+    </carrier>
+    <carrier>
+        <code>HIGHLAND-MOVE</code>
+        <name>Highland Move Logistics</name>
+        <region>highland</region>
+    </carrier>
+</catalog>

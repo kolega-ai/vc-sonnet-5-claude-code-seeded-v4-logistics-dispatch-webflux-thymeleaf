@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>New Job</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="card" style="max-width:640px;">
+        <h2>Create a new job</h2>
+        <form th:action="@{/dispatch/jobs}" th:object="${form}" method="post">
+            <div class="field">
+                <label for="customerId">Customer</label>
+                <select id="customerId" th:field="*{customerId}" required>
+                    <option value="">Select a customer</option>
+                    <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="locationId">Location ID</label>
+                <input id="locationId" th:field="*{locationId}" type="number" required/>
+                <span class="help-text">See the customer's detail page for their location IDs.</span>
+            </div>
+            <div class="field">
+                <label for="serviceTypeId">Service type</label>
+                <select id="serviceTypeId" th:field="*{serviceTypeId}" required>
+                    <option value="">Select a service type</option>
+                    <option th:each="st : ${serviceTypes}" th:value="${st.id}" th:text="${st.name} + (${st.requiresProof} ? ' (proof required)' : '')"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="regionId">Region</label>
+                <select id="regionId" th:field="*{regionId}" required>
+                    <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="priority">Priority</label>
+                <select id="priority" th:field="*{priority}">
+                    <option value="low">Low</option>
+                    <option value="normal" selected="selected">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="scheduledStart">Scheduled start</label>
+                <input id="scheduledStart" th:field="*{scheduledStart}" type="datetime-local" required/>
+            </div>
+            <div class="field">
+                <label for="scheduledEnd">Scheduled end</label>
+                <input id="scheduledEnd" th:field="*{scheduledEnd}" type="datetime-local" required/>
+            </div>
+            <div class="field">
+                <label for="description">Description</label>
+                <textarea id="description" th:field="*{description}" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Create job</button>
+                <a th:href="@{/dispatch/board}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

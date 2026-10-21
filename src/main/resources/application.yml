@@ -1,0 +1,54 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: always
+  reactive:
+    session:
+      timeout: 12h
+
+spring:
+  application:
+    name: field-dispatch-ops
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fielddispatch}
+    username: ${DB_USER:fielddispatch}
+    password: ${DB_PASSWORD:fielddispatch_local_dev}
+    pool:
+      enabled: true
+      initial-size: 4
+      max-size: 12
+  flyway:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fielddispatch}
+    user: ${DB_USER:fielddispatch}
+    password: ${DB_PASSWORD:fielddispatch_local_dev}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  thymeleaf:
+    cache: false
+    mode: HTML
+  mail:
+    host: localhost
+    port: 2525
+  codec:
+    max-in-memory-size: 10MB
+
+app:
+  uploads:
+    base-dir: ${UPLOADS_DIR:./uploads}
+  webhook:
+    mock-endpoint: ${WEBHOOK_MOCK_URL:http://localhost:8080/api/mock/webhook-sink}
+  security:
+    session-timeout-minutes: 720
+
+logging:
+  level:
+    root: INFO
+    com.fielddispatch: DEBUG
+    org.springframework.security: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

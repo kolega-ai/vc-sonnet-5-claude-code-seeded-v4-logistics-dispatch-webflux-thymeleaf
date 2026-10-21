@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Admin Overview</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="grid grid-3">
+        <div class="card stat-card"><div class="stat-value" th:text="${regionCount}">0</div><div class="stat-label">Regions</div></div>
+        <div class="card stat-card"><div class="stat-value" th:text="${jobCount}">0</div><div class="stat-label">Total jobs</div></div>
+        <div class="card stat-card"><div class="stat-value">4</div><div class="stat-label">Roles</div></div>
+    </div>
+    <div class="card">
+        <p class="section-title">Quick links</p>
+        <div class="pill-list">
+            <a class="btn btn-outline" th:href="@{/dispatch/board}">Dispatch board</a>
+            <a class="btn btn-outline" th:href="@{/admin/users}">User management</a>
+            <a class="btn btn-outline" th:href="@{/admin/imports}">Imports</a>
+            <a class="btn btn-outline" th:href="@{/admin/exports}">Exports</a>
+            <a class="btn btn-outline" th:href="@{/admin/webhooks}">Webhooks</a>
+            <a class="btn btn-outline" th:href="@{/admin/audit-log}">Audit log</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

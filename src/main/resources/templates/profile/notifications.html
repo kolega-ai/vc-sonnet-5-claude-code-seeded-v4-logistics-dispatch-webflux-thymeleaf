@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Notifications</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="card">
+        <h2>Notifications</h2>
+        <div th:if="${#lists.isEmpty(notifications)}" class="empty-state">
+            <div class="icon">🔔</div>
+            <p>You're all caught up. No notifications yet.</p>
+        </div>
+        <div th:each="n : ${notifications}" class="timeline-item">
+            <strong th:text="${n.title}">Title</strong>
+            <span th:if="${!n.read}" class="badge badge-primary" style="margin-left:8px;">New</span>
+            <p style="margin:4px 0;" th:text="${n.body}">Body</p>
+            <div class="meta" th:text="${#temporals.format(n.createdAt, 'MMM d, yyyy h:mm a')}">date</div>
+            <form th:if="${!n.read}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post" style="margin-top:6px;">
+                <button type="submit" class="btn btn-sm btn-outline">Mark read</button>
+            </form>
+            <button type="button" class="btn btn-sm btn-primary open-card" style="margin-top:6px;"
+                    th:attr="data-card=${n.id},data-destination=${param.continueTo != null ? param.continueTo[0] : '/dashboard'}">Open and continue</button>
+        </div>
+    </div>
+</div>
+<script th:inline="none">
+    document.querySelectorAll('.open-card').forEach(function (button) {
+        button.addEventListener('click', function () {
+            fetch('/notifications/' + button.dataset.card + '/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ destination: button.dataset.destination })
+            }).then(function (response) {
+                if (response.redirected || response.headers.get('Location')) {
+                    window.location = response.headers.get('Location') || response.url;
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

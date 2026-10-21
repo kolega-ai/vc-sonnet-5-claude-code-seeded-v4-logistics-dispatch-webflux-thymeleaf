@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Incident Queue</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="card">
+        <p class="section-title">Incident queue</p>
+        <div th:if="${#lists.isEmpty(incidents)}" class="empty-state">
+            <div class="icon">✅</div>
+            <p>No incidents to review.</p>
+        </div>
+        <table class="data-table" th:unless="${#lists.isEmpty(incidents)}">
+            <thead><tr><th>Job</th><th>Severity</th><th>Status</th><th>Summary</th><th>Reported</th><th>Actions</th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${incidents}">
+                <td><a th:href="@{/jobs/{id}(id=${i.jobId})}">Job #<span th:text="${i.jobId}"></span></a></td>
+                <td><span class="badge" th:classappend="${i.severity == 'critical' or i.severity == 'high'} ? 'badge-danger' : 'badge-warning'" th:text="${i.severity}"></span></td>
+                <td><span class="badge badge-neutral" th:text="${i.status}"></span></td>
+                <td th:text="${i.customerSummary}"></td>
+                <td th:text="${#temporals.format(i.createdAt, 'MMM d, h:mm a')}"></td>
+                <td>
+                    <form th:action="@{/incidents/{id}/status(id=${i.id})}" method="post" style="display:flex; gap:6px;">
+                        <select name="status">
+                            <option value="triaged">triaged</option>
+                            <option value="assigned">assigned</option>
+                            <option value="resolved">resolved</option>
+                            <option value="closed">closed</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline">Update</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

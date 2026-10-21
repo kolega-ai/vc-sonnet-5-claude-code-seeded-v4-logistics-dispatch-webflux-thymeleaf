@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="'Job #' + ${job.id}">Job</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h2 style="margin-bottom:4px;">Job #<span th:text="${job.id}">1</span> &middot; <span th:text="${serviceType.name}">Service</span></h2>
+                <p style="color:var(--color-text-muted); margin:0;" th:text="${job.description}">Description</p>
+            </div>
+            <div class="pill-list">
+                <span class="badge badge-info" th:text="${job.status}">status</span>
+                <span class="badge" th:classappend="${job.priority == 'urgent'} ? 'badge-danger' : 'badge-neutral'" th:text="${job.priority}">priority</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <p class="section-title">Customer &amp; location</p>
+            <p><strong th:text="${customer.name}">Customer</strong></p>
+            <p th:if="${location}" th:text="${location.addressLine + ', ' + location.city + ', ' + location.state + ' ' + location.postalCode}">Address</p>
+            <p class="section-title" style="margin-top:14px;">Schedule</p>
+            <p th:text="${#temporals.format(job.scheduledStart, 'MMM d, yyyy h:mm a')} + ' – ' + ${#temporals.format(job.scheduledEnd, 'h:mm a')}">window</p>
+            <p th:if="${job.rescheduleCount > 0}" class="badge badge-warning">Rescheduled <span th:text="${job.rescheduleCount}">1</span> time(s)</p>
+        </div>
+
+        <div class="card">
+            <p class="section-title">Assigned worker</p>
+            <p th:if="${assignedWorker != null}">Worker #<span th:text="${assignedWorker.id}"></span> &middot; <span th:text="${assignedWorker.availability}"></span></p>
+            <p th:if="${assignedWorker == null}" style="color:var(--color-text-muted);">Not yet assigned.</p>
+
+            <div th:if="${isStaff}">
+                <p class="section-title" style="margin-top:14px;">Dispatcher actions</p>
+                <form th:action="@{/dispatch/jobs/{id}/status(id=${job.id})}" method="post" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <select name="status">
+                        <option value="assigned">assigned</option>
+                        <option value="en_route">en_route</option>
+                        <option value="cancelled">cancelled</option>
+                        <option value="unassigned">unassigned</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline">Change status</button>
+                </form>
+                <form th:action="@{/dispatch/jobs/{id}/reschedule(id=${job.id})}" method="post" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+                    <div class="field" style="margin-bottom:0;">
+                        <label>New start</label>
+                        <input type="datetime-local" name="scheduledStart" required/>
+                    </div>
+                    <div class="field" style="margin-bottom:0;">
+                        <label>New end</label>
+                        <input type="datetime-local" name="scheduledEnd" required/>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline">Reschedule</button>
+                </form>
+            </div>
+
+            <div th:if="${isWorker}">
+                <p class="section-title" style="margin-top:14px;">Update status</p>
+                <form th:action="@{/worker/jobs/{id}/status(id=${job.id})}" method="post" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <select name="status">
+                        <option value="en_route">en_route</option>
+                        <option value="arrived">arrived</option>
+                        <option value="in_progress">in_progress</option>
+                        <option value="completed">completed</option>
+                        <option value="failed">failed</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                </form>
+                <p class="section-title" style="margin-top:14px;">Delivery handoff</p>
+                <form th:action="@{/jobs/{id}/handoff-code(id=${job.id})}" method="post" style="margin-bottom:8px;">
+                    <button type="submit" class="btn btn-sm btn-outline">Send handoff code</button>
+                </form>
+                <form th:action="@{/jobs/{id}/handoff(id=${job.id})}" method="post" style="display:flex; gap:8px; align-items:end;">
+                    <div class="field" style="margin-bottom:0;">
+                        <label>Handoff code</label>
+                        <input name="code" required/>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Confirm handoff</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <p class="section-title">Proof documents</p>
+        <div th:if="${#lists.isEmpty(proofs)}" class="empty-state" style="padding:16px;">No proof uploaded yet.</div>
+        <table class="data-table" th:unless="${#lists.isEmpty(proofs)}">
+            <thead><tr><th>File</th><th>Category</th><th>Visibility</th><th>Uploaded</th><th></th><th>Preview</th></tr></thead>
+            <tbody>
+            <tr th:each="p : ${proofs}">
+                <td th:text="${p.originalFilename}">file.jpg</td>
+                <td th:text="${p.category}">PHOTO</td>
+                <td><span class="badge" th:classappend="${p.customerVisible} ? 'badge-success' : 'badge-neutral'" th:text="${p.customerVisible} ? 'Customer visible' : 'Internal only'"></span></td>
+                <td th:text="${#temporals.format(p.createdAt, 'MMM d, h:mm a')}">date</td>
+                <td><a th:href="@{/proofs/{id}/download(id=${p.id})}" class="btn btn-sm btn-outline">Download</a></td>
+                <td><iframe th:src="@{/proofs/{id}/download(id=${p.id})}" title="Proof preview" style="width:220px; height:140px; border:1px solid var(--color-border);"></iframe></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${isWorker}" style="margin-top:16px; border-top:1px solid var(--color-border); padding-top:16px;">
+            <p class="section-title">Upload proof</p>
+            <form th:action="@{/worker/jobs/{id}/proof(id=${job.id})}" method="post" enctype="multipart/form-data" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+                <div class="field" style="margin-bottom:0;">
+                    <label>File</label>
+                    <input type="file" name="file" required/>
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                    <label>Category</label>
+                    <select name="category">
+                        <option value="SIGNATURE">Signature</option>
+                        <option value="PHOTO">Photo</option>
+                        <option value="FORM">Form</option>
+                        <option value="COMPLETION_DOC">Completion document</option>
+                    </select>
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                    <label>Visibility</label>
+                    <select name="visibility">
+                        <option value="CUSTOMER_VISIBLE">Customer visible</option>
+                        <option value="INTERNAL">Internal only</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card" th:if="${!isCustomer or !#lists.isEmpty(incidents)}">
+        <p class="section-title">Incidents</p>
+        <div th:if="${#lists.isEmpty(incidents)}" class="empty-state" style="padding:16px;">No incidents reported.</div>
+        <div th:each="i : ${incidents}" class="timeline-item">
+            <span class="badge" th:classappend="${i.severity == 'critical' or i.severity == 'high'} ? 'badge-danger' : 'badge-warning'" th:text="${i.severity}">high</span>
+            <span class="badge badge-neutral" th:text="${i.status}">open</span>
+            <p style="margin:6px 0;" th:text="${i.customerSummary}">Summary visible to customer</p>
+            <p th:if="${!isCustomer}" style="margin:0; font-size:13px; color:var(--color-text-muted);">
+                Internal notes: <span th:text="${i.internalNotes}">notes</span>
+            </p>
+        </div>
+        <form th:if="${!isCustomer}" th:action="@{/jobs/{id}/incidents(id=${job.id})}" method="post" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+            <div class="field" style="margin-bottom:0;">
+                <label>Severity</label>
+                <select name="severity">
+                    <option value="low">low</option>
+                    <option value="medium">medium</option>
+                    <option value="high">high</option>
+                    <option value="critical">critical</option>
+                </select>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+                <label>Customer-visible summary</label>
+                <input name="customerSummary" required/>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+                <label>Internal notes</label>
+                <input name="internalNotes"/>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline">Report incident</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <p class="section-title">Messages</p>
+        <div th:each="m : ${messages}" class="timeline-item">
+            <span class="badge badge-neutral" th:text="${m.senderRole}">role</span>
+            <p style="margin:4px 0;" th:text="${m.body}">message</p>
+            <div class="meta" th:text="${#temporals.format(m.createdAt, 'MMM d, h:mm a')}">date</div>
+        </div>
+        <form th:action="@{/jobs/{id}/messages(id=${job.id})}" method="post" enctype="multipart/form-data"
+              style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+            <input id="msgBody" name="body" placeholder="Write a message…" style="flex:1;" required/>
+            <input type="hidden" name="senderRole" th:value="${currentRole}"/>
+            <input type="hidden" name="senderId" th:value="${viewerId}"/>
+            <input type="file" name="attachment"/>
+            <button type="submit" class="btn btn-sm btn-primary">Send</button>
+            <button type="button" id="relatedGo" class="btn btn-sm btn-outline">Find related</button>
+            <button type="button" id="assistGo" class="btn btn-sm btn-outline">Routing assistant</button>
+        </form>
+        <pre id="relatedOut" class="help-text" style="white-space:pre-wrap;"></pre>
+        <pre id="assistOut" class="help-text" style="white-space:pre-wrap;"></pre>
+    </div>
+
+    <div class="card" th:if="${isStaff}">
+        <p class="section-title">Send customer notice</p>
+        <form th:action="@{/jobs/{id}/notice(id=${job.id})}" method="post" enctype="multipart/form-data"
+              style="display:flex; gap:8px; align-items:end; flex-wrap:wrap;">
+            <div class="field" style="margin-bottom:0;">
+                <label>Title</label>
+                <input name="title" required/>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+                <label>Notice document</label>
+                <input type="file" name="template" required/>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Send notice</button>
+        </form>
+    </div>
+</div>
+<script th:inline="none">
+    var relatedGo = document.getElementById('relatedGo');
+    if (relatedGo) {
+        relatedGo.addEventListener('click', function () {
+            var text = encodeURIComponent(document.getElementById('msgBody').value);
+            fetch('/jobs/' + window.location.pathname.split('/').pop() + '/messages/related?body=' + text)
+                .then(function (r) { return r.json(); })
+                .then(function (data) { document.getElementById('relatedOut').textContent = JSON.stringify(data, null, 2); });
+        });
+    }
+    var assistGo = document.getElementById('assistGo');
+    if (assistGo) {
+        assistGo.addEventListener('click', function () {
+            var note = document.getElementById('msgBody').value;
+            fetch('/jobs/' + window.location.pathname.split('/').pop() + '/assistant', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ note: note })
+            }).then(function (r) { return r.json(); })
+              .then(function (data) { document.getElementById('assistOut').textContent = JSON.stringify(data, null, 2); });
+        });
+    }
+</script>
+</body>
+</html>

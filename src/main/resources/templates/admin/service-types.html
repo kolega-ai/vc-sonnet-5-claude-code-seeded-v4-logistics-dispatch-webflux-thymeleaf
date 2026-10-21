@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Service Types</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="grid grid-2">
+        <div class="card">
+            <p class="section-title">Service types</p>
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Proof required</th><th>Base rate</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${serviceTypes}">
+                    <td th:text="${s.name}"></td>
+                    <td><span class="badge" th:classappend="${s.requiresProof} ? 'badge-warning' : 'badge-neutral'" th:text="${s.requiresProof} ? 'Yes' : 'No'"></span></td>
+                    <td th:text="${'$' + s.baseRate}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <p class="section-title">Add service type</p>
+            <form th:action="@{/admin/service-types}" method="post">
+                <div class="field"><label>Name</label><input name="name" required/></div>
+                <div class="field"><label>Description</label><input name="description"/></div>
+                <div class="field"><label>Base rate ($)</label><input name="baseRate" type="number" step="0.01" required/></div>
+                <div class="field">
+                    <label><input type="checkbox" name="requiresProof" value="true" style="width:auto;"/> Requires proof before completion</label>
+                </div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Add service type</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

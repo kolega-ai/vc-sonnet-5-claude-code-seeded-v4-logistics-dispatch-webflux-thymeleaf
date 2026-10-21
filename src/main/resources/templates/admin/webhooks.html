@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Webhooks</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="alert alert-success" th:if="${param.tested}">Test event fired. See delivery log below.</div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <p class="section-title">Subscriptions</p>
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Target</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="w : ${webhooks}">
+                    <td th:text="${w.name}"></td>
+                    <td th:text="${w.targetUrl}"></td>
+                    <td><span class="badge" th:classappend="${w.active} ? 'badge-success' : 'badge-neutral'" th:text="${w.active} ? 'Active' : 'Inactive'"></span></td>
+                    <td>
+                        <form th:action="@{/admin/webhooks/{id}/test(id=${w.id})}" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline">Send test event</button>
+                        </form>
+                        <a th:href="@{/admin/webhooks/{id}/delivery-settings(id=${w.id})}" class="btn btn-sm btn-outline">Delivery settings</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <p class="section-title">Add webhook</p>
+            <form th:action="@{/admin/webhooks}" method="post">
+                <div class="field"><label>Name</label><input name="name" required/></div>
+                <div class="field"><label>Target URL</label><input name="targetUrl" required value="http://localhost:8080/api/mock/webhook-sink"/></div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Add webhook</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <p class="section-title">Recent delivery attempts</p>
+        <table class="data-table">
+            <thead><tr><th>Event</th><th>Status</th><th>Result</th><th>Attempted</th></tr></thead>
+            <tbody>
+            <tr th:each="d : ${deliveries}">
+                <td th:text="${d.eventType}"></td>
+                <td th:text="${d.responseStatus}"></td>
+                <td><span class="badge" th:classappend="${d.success} ? 'badge-success' : 'badge-danger'" th:text="${d.success} ? 'Delivered' : 'Failed'"></span></td>
+                <td th:text="${#temporals.format(d.attemptedAt, 'MMM d, h:mm:ss a')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

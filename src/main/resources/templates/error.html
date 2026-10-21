@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="'Error ' + ${status} + ' - Field Dispatch Operations'">Error</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card" style="text-align:center;">
+        <h1 th:text="${status} + ' — ' + ${error}">Error</h1>
+        <p class="subtitle" th:text="${message != null and !#strings.isEmpty(message)} ? ${message} : 'Something went wrong handling your request.'">Message</p>
+        <a href="/dashboard" class="btn btn-primary">Back to dashboard</a>
+    </div>
+</div>
+</body>
+</html>

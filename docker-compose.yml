@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fielddispatch-postgres
+    environment:
+      POSTGRES_DB: fielddispatch
+      POSTGRES_USER: fielddispatch
+      POSTGRES_PASSWORD: fielddispatch_local_dev
+    ports:
+      - "55461:5432"
+    volumes:
+      - fielddispatch_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fielddispatch -d fielddispatch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fielddispatch-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: fielddispatch
+      DB_USER: fielddispatch
+      DB_PASSWORD: fielddispatch_local_dev
+      UPLOADS_DIR: /data/uploads
+    ports:
+      - "8471:8080"
+    volumes:
+      - fielddispatch_uploads:/data/uploads
+
+volumes:
+  fielddispatch_pgdata:
+  fielddispatch_uploads:

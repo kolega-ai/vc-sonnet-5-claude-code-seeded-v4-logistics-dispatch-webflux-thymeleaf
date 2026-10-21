@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>My Jobs</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="card">
+        <p class="section-title">Welcome</p>
+        <p th:text="${customer.name}">Customer</p>
+    </div>
+    <div class="card">
+        <p class="section-title">Your jobs</p>
+        <div th:if="${#lists.isEmpty(jobs)}" class="empty-state">
+            <div class="icon">📦</div>
+            <p>No jobs on file yet.</p>
+        </div>
+        <table class="data-table" th:unless="${#lists.isEmpty(jobs)}">
+            <thead><tr><th>Job</th><th>Status</th><th>Scheduled window</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td>#<span th:text="${job.id}"></span></td>
+                <td><span class="badge badge-info" th:text="${job.status}"></span></td>
+                <td th:text="${#temporals.format(job.scheduledStart, 'MMM d, h:mm a')}"></td>
+                <td><a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-sm btn-outline">View</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

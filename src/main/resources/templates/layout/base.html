@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Field Dispatch Operations</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=${assetVersion})}"/>
+</head>
+<body>
+<div class="app-shell">
+    <nav class="sidebar" aria-label="Primary navigation">
+        <div class="brand">Field Dispatch<small>Operations Console</small></div>
+
+        <div th:if="${currentRole == 'OPS_ADMIN'}">
+            <a th:href="@{/admin/overview}"><span class="label">Overview</span></a>
+            <a th:href="@{/dispatch/board}"><span class="label">Dispatch Board</span></a>
+            <a th:href="@{/incidents}"><span class="label">Incidents</span></a>
+            <div class="section-label">Administration</div>
+            <a th:href="@{/admin/regions}"><span class="label">Regions</span></a>
+            <a th:href="@{/admin/workers}"><span class="label">Workers</span></a>
+            <a th:href="@{/admin/service-types}"><span class="label">Service Types</span></a>
+            <a th:href="@{/admin/users}"><span class="label">Users</span></a>
+            <a th:href="@{/admin/imports}"><span class="label">Imports</span></a>
+            <a th:href="@{/admin/exports}"><span class="label">Exports</span></a>
+            <a th:href="@{/dispatch/partners}"><span class="label">Partner Console</span></a>
+            <a th:href="@{/admin/webhooks}"><span class="label">Webhooks</span></a>
+            <a th:href="@{/admin/audit-log}"><span class="label">Audit Log</span></a>
+        </div>
+
+        <div th:if="${currentRole == 'DISPATCHER'}">
+            <a th:href="@{/dispatch/board}"><span class="label">Dispatch Board</span></a>
+            <a th:href="@{/dispatch/partners}"><span class="label">Partner Console</span></a>
+            <a th:href="@{/incidents}"><span class="label">Incidents</span></a>
+        </div>
+
+        <div th:if="${currentRole == 'FIELD_WORKER'}">
+            <a th:href="@{/worker/dashboard}"><span class="label">My Jobs</span></a>
+        </div>
+
+        <div th:if="${currentRole == 'CUSTOMER'}">
+            <a th:href="@{/customer/portal}"><span class="label">My Jobs</span></a>
+        </div>
+
+        <div class="section-label">Account</div>
+        <a th:href="@{/profile}"><span class="label">Profile</span></a>
+        <a th:href="@{/notifications}"><span class="label">Notifications</span></a>
+    </nav>
+
+    <div class="main-area">
+        <header class="topbar">
+            <div>
+                <div class="crumb" th:if="${breadcrumb}" th:text="${breadcrumb}">Section</div>
+                <h1 th:text="${pageTitle} ?: 'Field Dispatch Operations'">Page title</h1>
+            </div>
+            <div class="user-box" sec:authorize="isAuthenticated()">
+                <span class="badge badge-primary role-badge" sec:authentication="principal.role">Role</span>
+                <span sec:authentication="name">user@example.com</span>
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="btn btn-outline btn-sm">Log out</button>
+                </form>
+            </div>
+        </header>
+        <main class="content">
+            <div layout:fragment="content">
+                <p>Page content goes here.</p>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

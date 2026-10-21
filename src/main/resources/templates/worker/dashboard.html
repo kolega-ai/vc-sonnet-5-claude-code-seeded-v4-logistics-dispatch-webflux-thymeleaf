@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>My Jobs</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="card">
+        <p class="section-title">Today's route</p>
+        <div th:if="${#lists.isEmpty(routeStops)}" class="empty-state" style="padding:14px;">No route planned for today yet.</div>
+        <ol th:unless="${#lists.isEmpty(routeStops)}" style="padding-left:20px;">
+            <li th:each="stop : ${routeStops}">
+                <a th:href="@{/jobs/{id}(id=${stop.jobId})}">Job #<span th:text="${stop.jobId}"></span></a>
+                (stop <span th:text="${stop.sequence}"></span>)
+            </li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <p class="section-title">Assigned jobs</p>
+        <div th:if="${#lists.isEmpty(jobs)}" class="empty-state">
+            <div class="icon">🧰</div>
+            <p>No jobs assigned to you right now.</p>
+        </div>
+        <table class="data-table" th:unless="${#lists.isEmpty(jobs)}">
+            <thead><tr><th>Job</th><th>Status</th><th>Priority</th><th>Scheduled</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td>#<span th:text="${job.id}"></span></td>
+                <td><span class="badge badge-info" th:text="${job.status}"></span></td>
+                <td><span class="badge badge-neutral" th:text="${job.priority}"></span></td>
+                <td th:text="${#temporals.format(job.scheduledStart, 'MMM d, h:mm a')}"></td>
+                <td><a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-sm btn-outline">Open</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <p class="section-title">Handset</p>
+        <p class="help-text">Enroll this handset for the shift by attaching the depot enrollment slip, then keep the label printer calibrated.</p>
+        <form th:action="@{/worker/handset}" method="post" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:end; flex-wrap:wrap;">
+            <div class="field" style="margin-bottom:0;">
+                <label>Enrollment slip</label>
+                <input type="file" name="enrollment" required/>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Enroll</button>
+        </form>
+        <div class="form-actions" style="margin-top:10px; display:flex; gap:8px;">
+            <form th:action="@{/worker/handset/calibrate}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-sm btn-outline">Calibrate printer</button>
+            </form>
+            <a th:href="@{/worker/handset/overlay}" class="btn btn-sm btn-outline">Download screen overlay</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

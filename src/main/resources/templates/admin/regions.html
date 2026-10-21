@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Regions</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="grid grid-2">
+        <div class="card">
+            <p class="section-title">Regions</p>
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Code</th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${regions}"><td th:text="${r.name}"></td><td th:text="${r.code}"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <p class="section-title">Add region</p>
+            <form th:action="@{/admin/regions}" method="post">
+                <div class="field"><label>Name</label><input name="name" required/></div>
+                <div class="field"><label>Code</label><input name="code" required/></div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Add region</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
